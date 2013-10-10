@@ -102,7 +102,7 @@ function certificate_delete_instance($id) {
     }
 
     // Delete any files associated with the certificate
-    $context = context_module::instance($cm->id);
+    $context = get_context_instance(CONTEXT_MODULE, $cm->id);
     $fs = get_file_storage();
     $fs->delete_area_files($context->id);
 
@@ -234,6 +234,33 @@ function certificate_get_participants($certificateid) {
 }
 
 /**
+ * Returns certid & userid under autogen = 1, certdate = 0
+ */
+function certificate_cronlist2(){
+    global $CFG, $DB;
+    $certmoduleid = $DB->get_record_select('modules',"name='certificate'");
+    return $DB->get_records_sql(
+            "SELECT DISTINCT DK.*
+            FROM(
+            SELECT @rownum:=@rownum+1 as rownumber, cm.id AS cmid, u.id AS userid, cm.instance AS instance, c.id AS course, cma.gradeitemid AS gradeitemid, cma.grademin AS grademin, cma.grademax AS grademax, cert.delivery AS delivery
+            FROM {course_modules} cm, {course} c, {user} u, {role_assignments} ra, {context} cxt, {course_modules_availability} cma, {certificate} cert, (SELECT @rownum:=0) r
+            WHERE cm.module = $certmoduleid->id
+            AND cm.course = c.id
+            AND c.id = cxt.instanceid
+            AND cxt.id = ra.contextid
+            AND ra.userid = u.id
+            AND ra.roleid=5
+            AND cxt.contextlevel=50
+            AND cm.instance = cert.id
+            AND cert.autogen = 1
+        ) DK
+            INNER JOIN {grade_grades} gg
+            ON DK.userid = gg.userid
+            WHERE DK.gradeitemid = gg.itemid
+            AND IFNULL(rawgrade,-1) BETWEEN grademin AND grademax");
+}
+
+/**
  * @uses FEATURE_GROUPS
  * @uses FEATURE_GROUPINGS
  * @uses FEATURE_GROUPMEMBERSONLY
@@ -262,6 +289,17 @@ function certificate_supports($feature) {
  * TODO:This needs to be done
  */
 function certificate_cron () {
+   /* global $DB;
+    $cronlist = certificate_cronlist2();
+    foreach($cronlist as $cron){
+        $course = $DB->get_record('course', array('id'=>$cron->course));
+        $cm = $DB->get_record('course_modules', array('id'=>$cron->cmid));
+        $certificate = $DB->get_record('certificate', array('id'=>$cron->instance));
+        $user = $DB->get_record('user', array('id'=>$cron->userid));
+        $context = get_context_instance(CONTEXT_MODULE, $cron->cmid);
+
+        // Create new certificate record
+        $certrecord = certificate_prepare_issue($course, $user, $certificate); */
     return true;
 }
 
@@ -278,7 +316,7 @@ function certificate_cron () {
 function certificate_get_teachers($certificate, $user, $course, $cm) {
     global $USER, $DB;
 
-    $context = context_module::instance($cm->id);
+    $context = get_context_instance(CONTEXT_MODULE, $cm->id);
     $potteachers = get_users_by_capability($context, 'mod/certificate:manage',
         '', '', '', '', '', '', false, false);
     if (empty($potteachers)) {
@@ -675,7 +713,7 @@ function certificate_get_issues($certificateid, $sort="ci.timecreated ASC", $gro
     global $CFG, $DB;
 
     // get all users that can manage this certificate to exclude them from the report.
-    $context = context_module::instance($cm->id);
+    $context = get_context_instance(CONTEXT_MODULE, $cm->id);
 
     $conditionssql = '';
     $conditionsparams = array();
@@ -856,7 +894,7 @@ function certificate_get_course_time($courseid) {
  * @return array
  */
 function certificate_get_mods() {
-    global $COURSE, $DB;
+    global $COURSE, $CFG, $DB;
 
     $strtopic = get_string("topic");
     $strweek = get_string("week");
@@ -867,8 +905,11 @@ function certificate_get_mods() {
     $mods = $modinfo->get_cms();
 
     $modules = array();
-    // The function get_section_info_all was introduced in Moodle 2.3, check it exists before using.
-    if (method_exists($modinfo, 'get_section_info_all')) {
+    // Check what version we are running - really we should have separate branch for 2.4, but
+    // having a branch called master and one called MOODLE_24_STABLE may be confusing. This
+    // module will also be replaced in the future so hack will do. Here we get the course
+    // sections and sort the modules as they appear in the course.
+    if ($CFG->version >= '2012112900') {
         $sections = $modinfo->get_section_info_all();
     } else {
         $sections = get_all_sections($COURSE->id);
@@ -1102,11 +1143,15 @@ function certificate_get_mod_grade($course, $moduleid, $userid) {
         $modinfo->percentage = grade_format_gradevalue($grade, $item, true, GRADE_DISPLAY_TYPE_PERCENTAGE, $decimals = 2);
         $modinfo->letter = grade_format_gradevalue($grade, $item, true, GRADE_DISPLAY_TYPE_LETTER, $decimals = 0);
 
+        // AB
+        $modinfo->grade = $grade;
+
         if ($grade) {
             $modinfo->dategraded = $item->grades[$userid]->dategraded;
         } else {
             $modinfo->dategraded = time();
         }
+//print_object($modinfo);
         return $modinfo;
     }
 
@@ -1128,7 +1173,7 @@ function certificate_get_date($certificate, $certrecord, $course, $userid = null
     if (empty($userid)) {
         $userid = $USER->id;
     }
-
+    //print_object($certrecord);
     // Set certificate date to current time, can be overwritten later
     $date = $certrecord->timecreated;
 
@@ -1145,6 +1190,7 @@ function certificate_get_date($certificate, $certrecord, $course, $userid = null
         }
     } else if ($certificate->printdate > 2) {
         if ($modinfo = certificate_get_mod_grade($course, $certificate->printdate, $userid)) {
+            //print_object($modinfo); ABBB
             $date = $modinfo->dategraded;
         }
     }
@@ -1316,12 +1362,11 @@ function certificate_get_code($certificate, $certrecord) {
  * @param char $style ''=normal, B=bold, I=italic, U=underline
  * @param int $size font size in points
  * @param string $text the text to print
- * @param int $width horizontal dimension of text block
  */
-function certificate_print_text($pdf, $x, $y, $align, $font='freeserif', $style, $size = 10, $text, $width = 0) {
+function certificate_print_text($pdf, $x, $y, $align, $font='freeserif', $style, $size=10, $text) {
     $pdf->setFont($font, $style, $size);
     $pdf->SetXY($x, $y);
-    $pdf->writeHTMLCell($width, 0, '', '', $text, 0, 0, 0, true, $align);
+    $pdf->writeHTMLCell(0, 0, '', '', $text, 0, 0, 0, true, $align);
 }
 
 /**

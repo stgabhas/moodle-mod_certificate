@@ -70,7 +70,7 @@ if (!$certificate = $DB->get_record('certificate', array('id'=> $cm->instance)))
 require_course_login($course->id, false, $cm);
 
 // Check capabilities
-$context = context_module::instance($cm->id);
+$context = get_context_instance(CONTEXT_MODULE, $cm->id);
 require_capability('mod/certificate:manage', $context);
 
 // Declare some variables

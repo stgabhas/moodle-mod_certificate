@@ -59,7 +59,7 @@ Letter Non-Embedded prints on letter size paper without embedded fonts.
 The non-embedded types use the Helvetica and Times fonts.  If you feel your users will not have these fonts on their computer, or if your language uses characters or symbols that are not accommodated by the Helvetica and Times fonts, then choose an embedded type.  The embedded types use the Dejavusans and Dejavuserif fonts.  This will make the pdf files rather large; thus it is not recommended to use an embedded type unless you must.
 
 New type folders can be added to the certificate/type folder. The name of the folder and any new language strings for the new type must be added to the certificate language file.';
-$string['certify'] = 'This is to certify that';
+$string['certify'] = 'certifies that';
 $string['code'] = 'Code';
 $string['completiondate'] = 'Course Completion';
 $string['course'] = 'For';
@@ -68,7 +68,7 @@ $string['coursename'] = 'Course';
 $string['coursetimereq'] = 'Required minutes in course';
 $string['coursetimereq_help'] = 'Enter here the minimum amount of time, in minutes, that a student must be logged into the course before they will be able to receive the certificate.';
 $string['credithours'] = 'Credit Hours';
-$string['customtext'] = 'Custom Text';
+$string['customtext'] = 'Custom Course Name';
 $string['customtext_help'] = 'If you want the certificate to print different names for the teacher than those who are assigned
 the role of teacher, do not select Print Teacher or any signature image except for the line image.  Enter the teacher names in this text box as you would like them to appear.  By default, this text is placed in the lower left of the certificate. The following html tags are available: &lt;br&gt;, &lt;p&gt;, &lt;b&gt;, &lt;i&gt;, &lt;u&gt;, &lt;img&gt; (src and width (or height) are mandatory), &lt;a&gt; (href is mandatory), &lt;font&gt; (possible attributes are: color, (hex color code), face, (arial, times, courier, helvetica, symbol)).';
 $string['date'] = 'On';
@@ -171,6 +171,8 @@ $string['printwmark'] = 'Watermark Image';
 $string['printwmark_help'] = 'A watermark file can be placed in the background of the certificate. A watermark is a faded graphic. A watermark could be a logo, seal, crest, wording, or whatever you want to use as a graphic background.';
 $string['receivedcerts'] = 'Received certificates';
 $string['receiveddate'] = 'Date Received';
+$string['reissuecert'] = 'Reissue Certificates'; // AB
+$string['reissuecert_help'] = 'If you choose yes here, then this certificate will be reissued with a new date, grade and code number every time a user clicks on the certificate link. Note: Although a table will show their past received dates, no review button will be available to users. Only the latest issued certificate will appear in the certificate report.'; // AB
 $string['removecert'] = 'Issued certificates removed';
 $string['report'] = 'Report';
 $string['reportcert'] = 'Report Certificates';
@@ -186,7 +188,7 @@ $string['signature'] = 'Signature';
 $string['statement'] = 'has completed the course';
 $string['summaryofattempts'] = 'Summary of Previously Received Certificates';
 $string['textoptions'] = 'Text Options';
-$string['title'] = 'CERTIFICATE of ACHIEVEMENT';
+$string['title'] = 'The Iowa State University Child Welfare Project';
 $string['to'] = 'Awarded to';
 $string['typeA4_embedded'] = 'A4 Embedded';
 $string['typeA4_non_embedded'] = 'A4 Non-Embedded';
@@ -202,3 +204,22 @@ $string['viewcertificateviews'] = 'View {$a} issued certificates';
 $string['viewed'] = 'You received this certificate on:';
 $string['viewtranscript'] = 'View Certificates';
 $string['watermark'] = 'Watermark';
+
+// More custom fields AB
+$string['autogenoptions'] = 'Auto-Generation Options';
+$string['autogen'] = 'Auto-Generation mode';
+$string['autogen_help'] = 'System will automatically generate the certificate.';
+$string['customdate']= 'Custom Date From';
+$string['customdate2']= 'Custom Date Until';
+$string['customdate_help']='You can enter custom date. Custom data has higher priority than print date.';
+$string['customdate2_help']='You can enter custom date. Custom data has higher priority than print date.';
+$string['eduhours']='Continuing Education Hours';
+$string['eduhours_help']='Enter here the number of continuing education hours to be printed on the certificate.';
+$string['trainer']='Print Trainer(s)';
+$string['trainer_help']='You can add list of trainers\' name on the certificate.';
+$string['location']='Location';
+$string['location_help']='Set a location to print on the certificate.';
+$string['typeletter_CEUs']='Letter CEUs';
+$string['typeletter_NoCEUs']='Letter No CEUs';
+$string['bottomline'] = 'This training meets the standards & criteria specified in IAC 645-281.3, continuing education for social workers. This certificate and program information must be retained for a period of 4 years.';
+$string['verificationcode'] = 'Verification Code: ';

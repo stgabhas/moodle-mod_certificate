@@ -81,6 +81,12 @@ class mod_certificate_mod_form extends moodleform_mod {
         $mform->setType('requiredtime', PARAM_INT);
         $mform->addHelpButton('requiredtime', 'coursetimereq', 'certificate');
 
+        // Auto Generation Options
+        $mform->addElement('header', 'autogenoptions', get_string('autogenoptions', 'certificate')); // AB
+        $mform->addElement('select', 'autogen', get_string('autogen', 'certificate'), $ynoptions); // AB
+        $mform->setDefault('autogen',0); // AB
+        $mform->addHelpButton('autogen','autogen','certificate'); // AB
+
         // Text Options
         $mform->addElement('header', 'textoptions', get_string('textoptions', 'certificate'));
 
@@ -89,6 +95,18 @@ class mod_certificate_mod_form extends moodleform_mod {
         $mform->addElement('select', 'printdate', get_string('printdate', 'certificate'), $dateoptions);
         $mform->setDefault('printdate', 'N');
         $mform->addHelpButton('printdate', 'printdate', 'certificate');
+
+        // Add Custom Start date Options // AB
+        $options = array('startyear => 1990', 'stopyear' => '2050', 'timezone' => 99, 'applydst' => true, 'optional' => true); // AB
+        $mform->addElement('date_selector', 'customdate', get_string('customdate', 'certificate'), $options); // AB
+        $mform->setType('customdate', PARAM_RAW); // AB
+        $mform->addHelpButton('customdate', 'customdate', 'certificate'); // AB
+
+        // Add Custom End date Options
+        $options = array('startyear => 1990', 'stopyear' => '2050', 'timezone' => 99, 'applydst' => true, 'optional' => true); // AB
+        $mform->addElement('date_selector', 'customdate2', get_string('customdate2', 'certificate'), $options); // AB
+        $mform->setType('customdate2', PARAM_RAW); // AB
+        $mform->addHelpButton('customdate2', 'customdate2', 'certificate'); // AB
 
         $dateformatoptions = array( 1 => 'January 1, 2000', 2 => 'January 1st, 2000', 3 => '1 January 2000',
             4 => 'January 2000', 5 => get_string('userdateformat', 'certificate'));
@@ -116,22 +134,39 @@ class mod_certificate_mod_form extends moodleform_mod {
         $mform->setDefault('printoutcome', 0);
         $mform->addHelpButton('printoutcome', 'printoutcome', 'certificate');
 
+        // Program hours // AB
         $mform->addElement('text', 'printhours', get_string('printhours', 'certificate'), array('size'=>'5', 'maxlength' => '255'));
         $mform->setType('printhours', PARAM_TEXT);
         $mform->addHelpButton('printhours', 'printhours', 'certificate');
 
-        $mform->addElement('select', 'printteacher', get_string('printteacher', 'certificate'), $ynoptions);
-        $mform->setDefault('printteacher', 0);
-        $mform->addHelpButton('printteacher', 'printteacher', 'certificate');
+        // CEU Hours // AB
+        $mform->addElement('text', 'eduhours', get_string('eduhours', 'certificate'), array('size'=>'5', 'maxlength' => '255')); // AB
+        $mform->setType('eduhours', PARAM_TEXT); // AB
+        $mform->addHelpButton('eduhours', 'eduhours', 'certificate'); // AB
 
+        //$mform->addElement('select', 'printteacher', get_string('printteacher', 'certificate'), $ynoptions);
+        //$mform->setDefault('printteacher', 0);
+        //$mform->addHelpButton('printteacher', 'printteacher', 'certificate');
+
+        // Instead of print teacher, you able to enter custom trainers' name // AB
+        $mform->addElement('textarea', 'trainer', get_string('trainer', 'certificate'), array('cols'=>'40', 'rows'=>'1', 'wrap'=>'virtual'));
+        $mform->setType('location', PARAM_RAW);
+        $mform->addHelpButton('trainer', 'trainer', 'certificate');
+
+        // Custom Course name instead of custom text // AB
         $mform->addElement('textarea', 'customtext', get_string('customtext', 'certificate'), array('cols'=>'40', 'rows'=>'4', 'wrap'=>'virtual'));
         $mform->setType('customtext', PARAM_RAW);
         $mform->addHelpButton('customtext', 'customtext', 'certificate');
 
+        // Add Custom location field // AB
+        $mform->addElement('textarea', 'location', get_string('location', 'certificate'), array('cols'=>'40', 'rows'=>'1', 'wrap'=>'virtual')); // AB
+        $mform->setType('location', PARAM_RAW); // AB
+        $mform->addHelpButton('location', 'location', 'certificate'); // AB
+
         // Design Options
         $mform->addElement('header', 'designoptions', get_string('designoptions', 'certificate'));
         $mform->addElement('select', 'certificatetype', get_string('certificatetype', 'certificate'), certificate_types());
-        $mform->setDefault('certificatetype', 'A4_non_embedded');
+        $mform->setDefault('certificatetype', 'letter_CEUs');
         $mform->addHelpButton('certificatetype', 'certificatetype', 'certificate');
 
         $orientation = array( 'L' => get_string('landscape', 'certificate'), 'P' => get_string('portrait', 'certificate'));

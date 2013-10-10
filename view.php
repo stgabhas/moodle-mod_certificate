@@ -44,7 +44,7 @@ if (!$certificate = $DB->get_record('certificate', array('id'=> $cm->instance)))
 }
 
 require_login($course->id, false, $cm);
-$context = context_module::instance($cm->id);
+$context = get_context_instance(CONTEXT_MODULE, $cm->id);
 require_capability('mod/certificate:view', $context);
 
 // log update
@@ -60,7 +60,7 @@ $PAGE->set_title(format_string($certificate->name));
 $PAGE->set_heading(format_string($course->fullname));
 
 // Set the context
-$context = context_module::instance($cm->id);
+$context = get_context_instance(CONTEXT_MODULE, $cm->id);
 
 if (($edit != -1) and $PAGE->user_allowed_editing()) {
      $USER->editing = $edit;
@@ -87,8 +87,10 @@ if ($certificate->requiredtime && !has_capability('mod/certificate:manage', $con
 // Create new certificate record, or return existing record
 $certrecord = certificate_get_issue($course, $USER, $certificate, $cm);
 
-// The function make_cache_directory was introduced in Moodle 2.2, check it exists before using.
-if (function_exists('make_cache_directory')) {
+// Create a directory that is writeable so that TCPDF can create temp images.
+// In 2.2 onwards the function make_cache_directory was introduced, use that,
+// otherwise we will use make_upload_directory.
+if ($CFG->version >= '2011120500') {
     make_cache_directory('tcpdf');
 } else {
     make_upload_directory('cache/tcpdf');
